@@ -10,19 +10,19 @@ const authenticate = require('../middleware/authenticate');
 
 router.post('/register', async (req, res) => {
 
-    const {displayName, userHandle, email, number, profilePic, password} = req.body;
+    const { displayName, userHandle, email, number, profilePic, password } = req.body;
 
     if (!displayName || !userHandle || !email || !password || !number) {
-        return res.status(422).json({error: 'Plz fill all the fields correctly'})
+        return res.status(422).json({ error: 'Plz fill all the fields correctly' })
     }
 
     try {
-        const userExist = await Users.findOne({user_handle: userHandle})
+        const userExist = await Users.findOne({ user_handle: userHandle })
 
         console.log(userExist);
 
         if (userExist) {
-            return res.status(422).json({error: 'Username already exists, provide unique username or login'})
+            return res.status(422).json({ error: 'Username already exists, provide unique username or login' })
         } else {
             const user = new Users({
                 display_name: displayName,
@@ -36,7 +36,7 @@ router.post('/register', async (req, res) => {
             await user.save();
 
             token = await user.generateAuthToken();
- 
+
             res.cookie("jwtoken", token, {
                 expires: new Date(Date.now() + 25892000000),
                 httpOnly: true,
@@ -44,7 +44,7 @@ router.post('/register', async (req, res) => {
                 path: '/',
             });
 
-            res.status(201).json({message: "user registered successfully", token})
+            res.status(201).json({ message: "user registered successfully", token })
         }
     } catch (err) {
         res.status(400).send(err);
@@ -68,9 +68,11 @@ router.post('/signin', async (req, res) => {
 
             token = await userLogin.generateAuthToken();
 
-            res.cookie("jwtoken", token, {
-                expires: new Date(Date.now() + 25892000000),
+            res.cookie('jwtoken', token, {
                 httpOnly: true,
+                sameSite: 'none', 
+                secure: true, 
+                domain: '.netlify.app', 
             });
 
             if (!isMatch) {
@@ -93,7 +95,7 @@ router.get('/home', authenticate, async (req, res) => {
 
 router.post('/postweet', async (req, res) => {
     try {
-        const {uuid, userHandle, tweet, profilePic, userName} = req.body;
+        const { uuid, userHandle, tweet, profilePic, userName } = req.body;
         const addTweet = new Tweets({
             user_uuid: uuid,
             name: userName,
@@ -102,7 +104,7 @@ router.post('/postweet', async (req, res) => {
             tweet: tweet
         })
         await addTweet.save();
-        res.status(201).json({message: "Tweet posted successfully"}) 
+        res.status(201).json({ message: "Tweet posted successfully" })
     } catch (err) {
         res.status(400).send(err);
     }
@@ -112,7 +114,7 @@ router.get('/getweets', authenticate, async (req, res) => {
     try {
         const data = await Tweets.find()
         const reversedData = data.slice().reverse();
-        res.status(201).send(reversedData) 
+        res.status(201).send(reversedData)
     } catch (err) {
         res.status(400).send(err);
     }
@@ -122,7 +124,7 @@ router.get('/getusers', authenticate, async (req, res) => {
     try {
         const data = await Users.find()
         const reversedData = data.slice().reverse();
-        res.status(201).send(reversedData) 
+        res.status(201).send(reversedData)
     } catch (err) {
         res.status(400).send(err);
     }
@@ -137,7 +139,7 @@ router.get('/getweets/:handle', authenticate, async (req, res) => {
         const userHandle = req.params.handle;
         const data = await Tweets.find({ user: userHandle })
         const reversedData = data.slice().reverse();
-        res.status(201).send(reversedData) 
+        res.status(201).send(reversedData)
     } catch (err) {
         res.status(400).send(err);
     }
@@ -146,7 +148,7 @@ router.get('/getweets/:handle', authenticate, async (req, res) => {
 router.patch('/editweet/:tweetid', async (req, res) => {
     try {
         const tweetid = req.params.tweetid;
-        const {uuid, userHandle, tweet, profilePic, userName} = req.body;
+        const { uuid, userHandle, tweet, profilePic, userName } = req.body;
         const updateFields = new Tweets({
             user_uuid: uuid,
             name: userName,
@@ -154,7 +156,7 @@ router.patch('/editweet/:tweetid', async (req, res) => {
             pic: profilePic,
             tweet: tweet
         })
-        
+
         const updatedTweet = await Tweets.findByIdAndUpdate(tweetid, updateFields, { new: true });
 
         if (!updatedTweet) {
@@ -182,7 +184,7 @@ router.delete('/delete/:tweetid', async (req, res) => {
 
 router.post('/follow', async (req, res) => {
     try {
-        const {followed_by_id, followed_id, followed_name, followed_handle, followed_pic} = req.body;
+        const { followed_by_id, followed_id, followed_name, followed_handle, followed_pic } = req.body;
         const addFollow = new Following({
             followed_by_id,
             followed_id,
@@ -195,7 +197,7 @@ router.post('/follow', async (req, res) => {
         const data = await Following.find({ followed_by_id: followed_by_id });
         console.log(data);
         res.status(200).send(data);
-         
+
     } catch (err) {
         res.status(400).send(err);
     }
