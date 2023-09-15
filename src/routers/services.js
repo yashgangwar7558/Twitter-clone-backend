@@ -37,12 +37,10 @@ router.post('/register', async (req, res) => {
 
             token = await user.generateAuthToken();
 
-            // res.cookie("jwtoken", token, {
-            //     expires: new Date(Date.now() + 25892000000),
-            //     httpOnly: true,
-            //     sameSite: 'None',
-            //     path: '/',
-            // });
+            res.cookie('jwtoken', token, {
+                httpOnly: true,
+                domain: '.netlify.app', // Specify the main domain
+            });
 
             res.status(201).json({ message: "user registered successfully", token })
         }
@@ -68,12 +66,10 @@ router.post('/signin', async (req, res) => {
 
             token = await userLogin.generateAuthToken();
 
-            // res.cookie("jwtoken", token, {
-            //     expires: new Date(Date.now() + 25892000000),
-            //     httpOnly: true,
-            //     sameSite: 'None',
-            //     path: '/',
-            // });
+            res.cookie('jwtoken', token, {
+                httpOnly: true,
+                domain: '.netlify.app', // Specify the main domain
+            });
 
             if (!isMatch) {
                 res.status(400).json({ error: 'Invalid Credentials' })
