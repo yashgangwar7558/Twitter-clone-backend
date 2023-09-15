@@ -5,11 +5,12 @@ const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
 const Users = require('../models/users');
 const Tweets = require('../models/tweets');
+const Following = require('../models/following');
 const authenticate = require('../middleware/authenticate');
 
 router.post('/register', async (req, res) => {
 
-    const {displayName, userHandle, email, number, password} = req.body;
+    const {displayName, userHandle, email, number, profilePic, password} = req.body;
 
     if (!displayName || !userHandle || !email || !password || !number) {
         return res.status(422).json({error: 'Plz fill all the fields correctly'})
@@ -28,6 +29,7 @@ router.post('/register', async (req, res) => {
                 user_handle: userHandle,
                 email: email,
                 number: number,
+                profile_pic: profilePic,
                 password: password,
             })
 
@@ -91,10 +93,12 @@ router.get('/home', authenticate, async (req, res) => {
 
 router.post('/postweet', async (req, res) => {
     try {
-        const {uuid, userHandle, tweet} = req.body;
+        const {uuid, userHandle, tweet, profilePic, userName} = req.body;
         const addTweet = new Tweets({
             user_uuid: uuid,
+            name: userName,
             user: userHandle,
+            pic: profilePic,
             tweet: tweet
         })
         await addTweet.save();
@@ -142,12 +146,14 @@ router.get('/getweets/:handle', authenticate, async (req, res) => {
 router.patch('/editweet/:tweetid', async (req, res) => {
     try {
         const tweetid = req.params.tweetid;
-        const { uuid, userHandle, tweet } = req.body;
-        const updateFields = {
+        const {uuid, userHandle, tweet, profilePic, userName} = req.body;
+        const updateFields = new Tweets({
             user_uuid: uuid,
+            name: userName,
             user: userHandle,
+            pic: profilePic,
             tweet: tweet
-        };
+        })
         
         const updatedTweet = await Tweets.findByIdAndUpdate(tweetid, updateFields, { new: true });
 
@@ -169,6 +175,40 @@ router.delete('/delete/:tweetid', async (req, res) => {
             return res.status(404).json({ message: "Tweet not found" });
         }
         res.status(200).json({ message: "Tweet deleted successfully", deletedTweet });
+    } catch (err) {
+        res.status(500).json({ message: "Internal server error" });
+    }
+})
+
+router.post('/follow', async (req, res) => {
+    try {
+        const {followed_by_id, followed_id, followed_name, followed_handle, followed_pic} = req.body;
+        const addFollow = new Following({
+            followed_by_id,
+            followed_id,
+            followed_name,
+            followed_handle,
+            followed_pic
+        })
+        await addFollow.save();
+
+        const data = await Following.find({ followed_by_id: followed_by_id });
+        console.log(data);
+        res.status(200).send(data);
+         
+    } catch (err) {
+        res.status(400).send(err);
+    }
+})
+
+router.delete('/unfollow/:id', async (req, res) => {
+    try {
+        const followed_id = req.params.id
+        const deletedFollowing = await Following.findOneAndDelete(followed_id);
+        if (!deletedFollowing) {
+            return res.status(404).json({ message: "Followed User not found" });
+        }
+        res.status(200).json({ message: "Following deleted successfully", deletedFollowing });
     } catch (err) {
         res.status(500).json({ message: "Internal server error" });
     }
