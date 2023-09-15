@@ -39,7 +39,6 @@ router.post('/register', async (req, res) => {
 
             res.cookie('jwtoken', token, {
                 httpOnly: true,
-                domain: '.netlify.app', // Specify the main domain
             });
 
             res.status(201).json({ message: "user registered successfully", token })
@@ -68,7 +67,6 @@ router.post('/signin', async (req, res) => {
 
             res.cookie('jwtoken', token, {
                 httpOnly: true,
-                domain: '.netlify.app', // Specify the main domain
             });
 
             if (!isMatch) {
