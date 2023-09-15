@@ -68,12 +68,12 @@ router.post('/signin', async (req, res) => {
 
             token = await userLogin.generateAuthToken();
 
-            res.cookie('jwtoken', token, {
-                httpOnly: true,
-                sameSite: 'none', 
-                secure: true, 
-                domain: '.netlify.app', 
-            });
+            // res.cookie('jwtoken', token, {
+            //     httpOnly: true,
+            //     sameSite: 'none', 
+            //     secure: true, 
+            //     domain: '.netlify.app', 
+            // });
 
             if (!isMatch) {
                 res.status(400).json({ error: 'Invalid Credentials' })
