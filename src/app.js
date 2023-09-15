@@ -9,7 +9,7 @@ const app = express();
 const port = process.env.PORT;
 
 app.use(express.json());
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(cors({ origin: 'https://dancing-puppy-71cd54.netlify.app', credentials: true }));
 app.use(cookieParser());
 
 // to ensure server connects to database before its live
